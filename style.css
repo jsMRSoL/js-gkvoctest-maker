@@ -1,0 +1,32 @@
+body {
+    /* background: gray; */
+    /* color: white: */
+}
+
+.card-link {
+    color: black;
+    font-size: 1.5rem;
+}
+
+td:nth-child(1), td:nth-child(3) {
+    white-space:nowrap;
+}
+td:nth-child(2) {
+    width: 99%;
+}
+
+.feedback {
+    color: green;
+}
+
+.filler {
+    min-height: 1000px;
+}
+
+.delete, .add-answer, move-up, move-down {
+    cursor: pointer;
+}
+
+.hidden {
+    display: none;
+}

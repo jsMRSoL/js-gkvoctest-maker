@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="./style.css">
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Popper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <!-- Fontawesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- Papaparse -->
+    <script type="text/javascript" src="./papaparse.min.js"></script>
+    <!-- Filesaver -->
+    <script type="text/javascript" src="./FileSaver.js"></script>
+    <title>Greek Vocab Test Maker</title>
+</head>
+
+<body>
+    <div id="header" class="container-fluid bg-secondary text-white">
+        <div class="card-header">
+            <h1>Greek Vocab Test Maker</h1>
+            <div class="btn-group">
+                <button type="button" class="btn btn-dark btn-primary">
+                    Question count: <span id="q-count">0</span>
+                </button>
+                <button type="button" id="add-btn" class="btn btn-dark btn-primary">Add</button>
+                <button type="button" id="import-btn" class="btn btn-dark btn-primary">Import</button>
+                <button type="button" id="export-btn" class="btn btn-dark btn-primary">Export</button>
+                <button type="button" id="start-btn" class="btn btn-dark btn-primary">Start again</button>
+            </div>
+        </div>
+    </div>
+    <div id="main" class="container-fluid bg-secondary">
+        <div id="accordion">
+            <!-- <div class="card">
+                 <div class="card-header d-flex">
+                 <a class="card-link flex-grow-1" data-toggle="collapse" href="#collapseOne" contenteditable="false">
+                 ὁ δοῦλος
+                 </a>
+                 <div class="btn-group btn-group-lg">
+                 <button type="button" class="btn basic fa fa-lock d-none unlock-btn"></button>
+                 <button type="button" class="btn basic fa fa-unlock unlock-btn"></button>
+                 <button type="button" class="btn basic fa fa-minus-circle delete-question"></button>
+                 </div>
+                 </div>
+                 <div id="collapseOne" class="collapse show" data-parent="#accordion">
+                 <div class="card-body bg-light">
+                 <table class="table table-striped">
+                 <thead>
+                 <tr>
+                 <th>Mark</th>
+                 <th>Answer</th>
+                 <th>Feedback</th>
+                 <th>Edits</th>
+                 </tr>
+                 </thead>
+                 <tbody>
+                 <tr>
+                 <td>
+                 <div class="btn-group">
+                 <button type="button" class="mark btn btn-dark">100%</button>
+                 <button type="button" class="mark btn btn-secondary">50%</button>
+                 </div>
+                 </td>
+                 <td contenteditable="true">slave</td>
+                 <td contenteditable="true" class="feedback">Well done!</td>
+                 <td class="d-flex">
+                 <button type="button" class="btn basic btn-sm move-up fa fa-arrow-circle-up"></button>
+                 <button type="button" class="btn basic btn-sm delete fa fa-minus-square"></button>
+                 <button type="button" class="btn basic btn-sm move-down fa fa-arrow-circle-down"></button>
+                 </td>
+                 </tr>
+                 <tr>
+                 <td>
+                 <div class="btn-group">
+                 <button type="button" class="mark btn btn-dark">100%</button>
+                 <button type="button" class="mark btn btn-secondary">50%</button>
+                 </div>
+                 </td>
+                 <td contenteditable="true">servant</td>
+                 <td contenteditable="true" class="feedback">Well done!</td>
+                 <td class="d-flex">
+                 <button type="button" class="btn basic btn-sm move-up fa fa-arrow-circle-up"></button>
+                 <button type="button" class="btn basic btn-sm delete fa fa-minus-square"></button>
+                 <button type="button" class="btn basic btn-sm move-down fa fa-arrow-circle-down"></button>
+                 </td>
+                 </tr>
+                 <tr>
+                 <td>
+                 <div class="btn-group">
+                 <button type="button" class="mark btn btn-dark btn-primary">100%</button>
+                 <button type="button" class="mark btn btn-secondary">50%</button>
+                 </div>
+                 </td>
+                 <td contenteditable="true">bondsman</td>
+                 <td contenteditable="true" class="feedback">Join this century!</td>
+                 <td class="d-flex">
+                 <button type="button" class="btn basic btn-sm move-up fa fa-arrow-circle-up"></button>
+                 <button type="button" class="btn basic btn-sm delete fa fa-minus-square"></button>
+                 <button type="button" class="btn basic btn-sm move-down fa fa-arrow-circle-down"></button>
+                 </td>
+                 </tr>
+                 </tbody>
+                 </table>
+                 <div class="d-flex justify-content-center">
+                 <i class="add-answer fa fa-plus-circle" title="Add answer"></i>
+                 </div>
+                 </div>
+                 </div>
+                 </div>
+
+                 <div class="card">
+                 <div class="card-header d-flex">
+                 <a class="collapsed card-link flex-grow-1" data-toggle="collapse" href="#collapseTwo" contenteditable="true">
+                 ᾐδοῦντο
+                 </a>
+                 <div class="btn-group btn-group-lg">
+                 <button type="button" class="btn basic fa fa-lock d-none unlock-btn"></button>
+                 <button type="button" class="btn basic fa fa-unlock unlock-btn"></button>
+                 <button type="button" class="btn basic fa fa-minus-circle delete-question"></button>
+                 </div>
+                 </div>
+                 <div id="collapseTwo" class="collapse" data-parent="#accordion">
+                 <div class="card-body">
+                 <table class="table table-striped">
+                 <thead>
+                 <tr>
+                 <th>Mark</th>
+                 <th>Answer</th>
+                 <th>Feedback</th>
+                 <th>Edits</th>
+                 </tr>
+                 </thead>
+                 <tbody>
+                 <tr>
+                 <td>
+                 <div class="btn-group">
+                 <button type="button" class="mark btn btn-dark">100%</button>
+                 <button type="button" class="mark btn btn-secondary">50%</button>
+                 </div>
+                 </td>
+                 <td contenteditable="true">slave</td>
+                 <td contenteditable="true" class="feedback">Well done!</td>
+                 <td class="d-flex">
+                 <button type="button" class="btn basic btn-sm move-up fa fa-arrow-circle-up"></button>
+                 <button type="button" class="btn basic btn-sm delete fa fa-minus-square"></button>
+                 <button type="button" class="btn basic btn-sm move-down fa fa-arrow-circle-down"></button>
+                 </td>
+                 </tr>
+                 <tr>
+                 <td>
+                 <div class="btn-group">
+                 <button type="button" class="mark btn btn-dark">100%</button>
+                 <button type="button" class="mark btn btn-secondary">50%</button>
+                 </div>
+                 </td>
+                 <td contenteditable="true">servant</td>
+                 <td contenteditable="true" class="feedback">Well done!</td>
+                 <td class="d-flex">
+                 <button type="button" class="btn basic btn-sm move-up fa fa-arrow-circle-up"></button>
+                 <button type="button" class="btn basic btn-sm delete fa fa-minus-square"></button>
+                 <button type="button" class="btn basic btn-sm move-down fa fa-arrow-circle-down"></button>
+                 </td>
+                 </tr>
+                 <tr>
+                 <td>
+                 <div class="btn-group">
+                 <button type="button" class="mark btn btn-dark">100%</button>
+                 <button type="button" class="mark btn btn-secondary">50%</button>
+                 </div>
+                 </td>
+                 <td contenteditable="true">bondsman</td>
+                 <td contenteditable="true" class="feedback">Join this century!</td>
+                 <td class="d-flex">
+                 <button type="button" class="btn basic btn-sm move-up fa fa-arrow-circle-up"></button>
+                 <button type="button" class="btn basic btn-sm delete fa fa-minus-square"></button>
+                 <button type="button" class="btn basic btn-sm move-down fa fa-arrow-circle-down"></button>
+                 </td>
+                 </tr>
+                 </tbody>
+                 </table>
+                 <div class="d-flex justify-content-center">
+                 <i class="add-answer fa fa-plus-circle" title="Add answer"></i>
+                 </div>
+                 </div>
+                 </div> -->
+            <!-- </div> -->
+        </div>
+    </div>
+    <div class="container-fluid flex-column bg-secondary filler"></div>
+    <script src="./app.js"></script>
+</body>
+
+</html>
