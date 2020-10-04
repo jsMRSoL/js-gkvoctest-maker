@@ -1,4 +1,3 @@
-// const pp = require('papaparse');
 // Selectors
 const marksButtons = document.getElementsByClassName('mark');
 console.log(`marksButtons.length ${marksButtons.length}`);
@@ -22,6 +21,7 @@ const qAccordion = document.querySelector('#accordion');
 const addQuButton = document.querySelector('#add-btn');
 const importQsButton = document.querySelector('#import-btn');
 const exportQsButton = document.querySelector('#export-btn');
+const quizletButton = document.querySelector('#quizlet-btn');
 const startAgainButton = document.querySelector('#start-btn');
 
 const btnEditable = document.getElementsByClassName('unlock-btn');
@@ -35,6 +35,9 @@ fileSelector.setAttribute('type', 'file');
 fileSelector.setAttribute('accept', '.csv');
 fileSelector.setAttribute('style', 'display:none');
 document.body.appendChild(fileSelector);
+
+// const testButton = document.querySelector('#test-btn');
+// testButton.addEventListener('click', testVBR);
 
 // Events
 for (var i=0; i < marksButtons.length; i++) {
@@ -73,6 +76,7 @@ addQuButton.addEventListener('click', addQuestion);
 importQsButton.addEventListener('click', importQuestions);
 fileSelector.addEventListener('input', reportFile);
 exportQsButton.addEventListener('click', exportQuestions);
+quizletButton.addEventListener('click', quizletQuestions);
 startAgainButton.addEventListener('click', startAgain);
 
 // Functions
@@ -138,10 +142,12 @@ function makeAnswerRow(answer, halfMark) {
         markHTML = `
                     <button type="button" class="mark btn btn-dark">100%</button>
                     <button type="button" class="mark btn btn-secondary">50%</button>`;
+        feedback = "Well done!";
     } else {
         markHTML = `
                     <button type="button" class="mark btn btn-secondary">100%</button>
                     <button type="button" class="mark btn btn-dark">50%</button>`;
+        feedback = "Good try! What verb form is it?";
     }
     // create the row and write the html
     row = document.createElement('tr');
@@ -153,7 +159,7 @@ function makeAnswerRow(answer, halfMark) {
                             </div>
                         </td>
                         <td contenteditable="true" class="answer">${answer}</td>
-                        <td contenteditable="true" class="feedback">Well done!</td>
+                        <td contenteditable="true" class="feedback">${feedback}</td>
                         <td class="d-flex">
                             <button type="button" class="btn basic btn-sm move-up fa fa-arrow-circle-up"></button>
                             <button type="button" class="btn basic btn-sm delete fa fa-minus-square"></button>
@@ -202,7 +208,7 @@ function addQuestion(greek, answer, halfMark) {
                         <button type="button" class="btn basic fa fa-minus-circle delete-question"></button>
                     </div>
                 </div>
-                <div id="collapse${qNo}" class="collapse" data-parent="#accordion">
+                <div id="collapse${qNo}" class="collapse show" data-parent="#accordion">
                     <div class="card-body">
                         <table class="table table-striped">
                             <thead>
@@ -228,6 +234,10 @@ function addQuestion(greek, answer, halfMark) {
     qCard.innerHTML = cardHTML;
 
     // split answers and loop
+    answer = answer.replace(/\;/g, ",");
+    answer = answer.replace(/\(.*\)/g, "");
+    answer = answer.replace(/\+ [A-Z]*/g, "");
+    // console.log(answer);
     var answerlist = answer.split(',');
     for(var i = 0; i < answerlist.length; i++) {
         // make row
@@ -250,6 +260,214 @@ function addQuestion(greek, answer, halfMark) {
     delQBtn.addEventListener('click', deleteQuestion);
     // add to accordion
     qAccordion.append(qCard);
+}
+
+
+async function addVerbQuestion(greekVerb, answer, halfMark) {
+    //get array of meanings
+    answer = answer.replace("I ", "");
+    answer = answer.replace(";", ",");
+    answer = answer.replace(/\(.*\)/g, "");
+    answer = answer.replace(/\+ [A-Z]*/g, "");
+    // console.log(answer);
+    var meanings = answer.split(","); 
+    // create array of verb objects
+    // console.log(meanings);
+    var i = 0;
+    var verbCollection = [];
+    key = env.KEY;
+    while (i < meanings.length) {
+        var verb = await getVerbResponse(meanings[i].trim(), key);
+        // console.log("The addVerbQuestion sees: ", verb);
+        verbCollection.push(verb);
+        // console.log(meanings[i].trim());
+        i++;
+    }
+    
+    // // get greek verb parts
+    var greekParts = greekVerb.split(',');
+
+    // // line up variables for present
+    var qNo = parseInt(qSpan.innerText) + 1;
+    // // create element
+    var qCard = document.createElement('div');
+    qCard.classList.add('card');
+    cardHTML = getCardHTML(greekParts[0], qNo);
+    qCard.innerHTML = cardHTML;
+
+    // split answers and loop
+    for(var i = 0; i < verbCollection.length; i++) {
+        // make row
+        var pres = `I ${verbCollection[i].present}`;
+        var row = makeAnswerRow(pres, false);
+        // add row
+        var tblbody = qCard.querySelector('tbody');
+        tblbody.append(row);
+        row = makeAnswerRow(verbCollection[i].asterisked.replace('*am* ', '*'), true);
+        tblbody.append(row);
+    }
+    // add halfmark answer
+    // add event 1
+    var addBtn = qCard.getElementsByClassName('add-answer')[0];
+    addBtn.addEventListener('click', addAnswer);
+    // add event 2
+    var lockBtns = qCard.getElementsByClassName('unlock-btn');
+    for (var i=0; i < lockBtns.length; i++) {
+        lockBtn = lockBtns[i];
+        lockBtn.addEventListener('click', toggleEditable);
+    }
+    // add event 3
+    var delQBtn = qCard.getElementsByClassName('delete-question')[0];
+    delQBtn.addEventListener('click', deleteQuestion);
+    // add to accordion
+    qAccordion.append(qCard);
+
+    if (greekParts[1]) {
+        
+        // line up variables for future
+        var qNo = qNo + 1;
+        // create element
+        var qCard = document.createElement('div');
+        qCard.classList.add('card');
+        cardHTML = getCardHTML(greekParts[1], qNo);
+        qCard.innerHTML = cardHTML;
+
+        // split answers and loop
+        for(var i = 0; i < verbCollection.length; i++) {
+            // make row
+            var fut = `I*ll ${verbCollection[i].present.replace('am', 'be')}`;
+            var row = makeAnswerRow(fut, false);
+            // add row
+            var tblbody = qCard.querySelector('tbody');
+            tblbody.append(row);
+            row = makeAnswerRow(verbCollection[i].asterisked.replace('*am* ', '*'), true);
+            tblbody.append(row);
+        }
+        // add event 1
+        var addBtn = qCard.getElementsByClassName('add-answer')[0];
+        addBtn.addEventListener('click', addAnswer);
+        // add event 2
+        var lockBtns = qCard.getElementsByClassName('unlock-btn');
+        for (var i=0; i < lockBtns.length; i++) {
+            lockBtn = lockBtns[i];
+            lockBtn.addEventListener('click', toggleEditable);
+        }
+        // add event 3
+        var delQBtn = qCard.getElementsByClassName('delete-question')[0];
+        delQBtn.addEventListener('click', deleteQuestion);
+        // add to accordion
+        qAccordion.append(qCard);
+    }
+
+    if (greekParts[2]) {
+        
+        // line up variables for aorist
+        var qNo = qNo + 1;
+        // create element
+        var qCard = document.createElement('div');
+        qCard.classList.add('card');
+        cardHTML = getCardHTML(greekParts[2], qNo);
+        qCard.innerHTML = cardHTML;
+
+        // split answers and loop
+        for(var i = 0; i < verbCollection.length; i++) {
+            // make row
+            var preterite = `I ${verbCollection[i].past_simple}`;
+            var row = makeAnswerRow(preterite, false);
+            // add row
+            var tblbody = qCard.querySelector('tbody');
+            tblbody.append(row);
+            row = makeAnswerRow(verbCollection[i].asterisked.replace('*am* ', '*'), true);
+            tblbody.append(row);
+        }
+        // add event 1
+        var addBtn = qCard.getElementsByClassName('add-answer')[0];
+        addBtn.addEventListener('click', addAnswer);
+        // add event 2
+        var lockBtns = qCard.getElementsByClassName('unlock-btn');
+        for (var i=0; i < lockBtns.length; i++) {
+            lockBtn = lockBtns[i];
+            lockBtn.addEventListener('click', toggleEditable);
+        }
+        // add event 3
+        var delQBtn = qCard.getElementsByClassName('delete-question')[0];
+        delQBtn.addEventListener('click', deleteQuestion);
+        // add to accordion
+        qAccordion.append(qCard);
+    }
+
+    if (greekParts[3]) {
+        
+        // line up variables for aorist passive
+        var qNo = qNo + 1;
+        // create element
+        var qCard = document.createElement('div');
+        qCard.classList.add('card');
+        cardHTML = getCardHTML(greekParts[3], qNo);
+        qCard.innerHTML = cardHTML;
+
+        // split answers and loop
+        for(var i = 0; i < verbCollection.length; i++) {
+            // make row
+            var pastPt = `I was ${verbCollection[i].past_simple}`;
+            var row = makeAnswerRow(pastPt, false);
+            // add row
+            var tblbody = qCard.querySelector('tbody');
+            tblbody.append(row);
+            row = makeAnswerRow(verbCollection[i].asterisked.replace('*am* ', '*'), true);
+            tblbody.append(row);
+        }
+        // add event 1
+        var addBtn = qCard.getElementsByClassName('add-answer')[0];
+        addBtn.addEventListener('click', addAnswer);
+        // add event 2
+        var lockBtns = qCard.getElementsByClassName('unlock-btn');
+        for (var i=0; i < lockBtns.length; i++) {
+            lockBtn = lockBtns[i];
+            lockBtn.addEventListener('click', toggleEditable);
+        }
+        // add event 3
+        var delQBtn = qCard.getElementsByClassName('delete-question')[0];
+        delQBtn.addEventListener('click', deleteQuestion);
+        // add to accordion
+        qAccordion.append(qCard);
+    }
+    // finally update display of question count
+    qSpan.innerText = qNo;
+}
+
+function getCardHTML(greek, qNo) {
+    return `
+                <div class="card-header d-flex">
+                    <a class="collapsed card-link flex-grow-1" data-toggle="collapse" href="#collapse${qNo}" contenteditable="false">
+                        ${greek}
+                    </a>
+                    <div class="btn-group btn-group-lg">
+                        <button type="button" class="btn basic fa fa-lock d-none unlock-btn"></button>
+                        <button type="button" class="btn basic fa fa-unlock unlock-btn"></button>
+                        <button type="button" class="btn basic fa fa-minus-circle delete-question"></button>
+                    </div>
+                </div>
+                <div id="collapse${qNo}" class="collapse show" data-parent="#accordion">
+                    <div class="card-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Mark</th>
+                                    <th>Answer</th>
+                                    <th>Feedback</th>
+                                    <th>Edits</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                        <div class="d-flex justify-content-center">
+                            <i class="add-answer fa fa-plus-circle" title="Add answer"></i>
+                        </div>
+                    </div>
+                </div>
+    `;
 }
 
 function moveAnswerUp() {
@@ -295,11 +513,13 @@ function reportFile(e){
         complete: function(results) {
             // console.log(results);
             results.data.map((row, index)=> {
-                console.log(row);
+                // console.log(row);
                 // console.log(row['Greek ']);
-                if(row['Greek ']) {
+                if(row['Greek']) {
                     if(!row['Part of Speech'].includes('verb')) {
-                        addQuestion(row['Greek '], row['English'], false);
+                        addQuestion(row['Greek'], row['English'], false);
+                    } else {
+                        addVerbQuestion(row['Greek'], row['English'], false);
                     }
                 }
             });
@@ -383,4 +603,111 @@ function makeQuestionString(quNoShort, quNoLong, greek, answerCode) {
         <shuffleanswers>0</shuffleanswers>
         </question>
 `;
+}
+
+function testVBR() {
+    getVerbResponse("give up on", env.KEY);
+}
+
+async function getVerbResponse(eng_verb, key) {
+    // split phrasal verbs
+    if (eng_verb.includes(' ')) {
+        var parts = eng_verb.replace(' ', '|').split('|');
+        var head = parts[0];
+        var tail = ` ${parts[1]}`;
+    } else {
+        var head = eng_verb;
+        var tail = '';
+    }
+
+    // fetch('https://www.dictionaryapi.com/api/v3/references/sd4/json/give?key=2ccee46e-3ce5-44f4-a3e3-0dfc00d90e8a')
+    //     .then(response => response.text())
+    //     .then(json => console.log(json));
+    var response = await fetch(`https://www.dictionaryapi.com/api/v3/references/sd4/json/${head}?key=${key}`)
+        .then(response => response.json())
+        .then(json => { return json });
+    // console.log(response);
+    // get correct part of speech
+    var i = 0;
+    do {
+        verb = response[i];
+        i++;
+    } while ((verb['fl'] !== "verb") && (i < response.length));
+        
+    // console.log(verb);
+    // verb = response[0];
+    // get required verb forms
+    // check for existence of the inflections
+    if (!verb['ins']) {
+        if (head.endsWith('e')) {
+            var preterite = `${head}d`;
+        } else {
+            var preterite = `${head}ed`;
+        }
+        var verbObj = {
+            present: eng_verb,
+            past_simple: `${preterite}${tail}`,
+            past_part: `${preterite}${tail}`,
+            asterisked: `*${head}*${tail}`,
+        };
+        // console.log("No inflections: default :", verbObj);
+        return verbObj;
+    }
+
+    // get inflections
+    preterite = verb['ins'][0]['if'].replace(/\*/g, '');
+    past_pt = verb['ins'][1]['if'].replace(/\*/g, '');
+    if (past_pt.endsWith('ing')) {
+        past_pt = preterite;
+    }
+    // console.log(`Preterite: ${preterite}`);
+    // console.log(`Past participle: ${past_pt}`);
+    var verbObj = {
+        present: eng_verb,
+        past_simple: `${preterite}${tail}`,
+        past_part: `${past_pt}${tail}`,
+        asterisked: `*${head}*${tail}`,
+    };
+    // console.log('The async function: ', verbObj);
+    return verbObj;
+}
+
+function quizletQuestions() {
+    var questions = "";
+    var question;
+    var greek;
+    var score, answer;
+    var tbl;
+    var answerCode;
+    console.log("quizletQuestions function called...")
+    $(qAccordion).children().each(function(index) {
+        question = "";
+        greek = $(this).find('a').text();
+        greek = $.trim(greek);
+        // console.log("Question word:");
+        // console.log($.trim(greek));
+        tbl = $(this).find('tbody');
+        // console.log(tbl);
+        answerCode = "";
+        $(tbl).children('tr').each(function(index) {
+            score = $(this).find('.btn-dark').text();
+            score = $.trim(score);
+            // put check for 100 here
+            if ( score === '100%' ) {
+                answer = $(this).find('.answer').text();
+                answer = answer.replace('I*ll', 'I will');
+                answer = $.trim(answer);
+                // console.log(`${score} | ${answer} | ${feedback}`);
+                answerCode = `${answerCode}, ${answer}`;
+                console.log(answerCode);
+            }
+        });
+        question = `<p>${greek}:${answerCode}</p>`
+        question = question.replace(':,', ":");
+        // console.log(question);
+        questions = `${questions}${question}`;
+    });
+    // console.log(questions);
+    var newWindow = window.open();
+    newWindow.document.write(questions);
 }
