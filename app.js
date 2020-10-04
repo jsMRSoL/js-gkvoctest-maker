@@ -620,9 +620,6 @@ async function getVerbResponse(eng_verb, key) {
         var tail = '';
     }
 
-    // fetch('https://www.dictionaryapi.com/api/v3/references/sd4/json/give?key=2ccee46e-3ce5-44f4-a3e3-0dfc00d90e8a')
-    //     .then(response => response.text())
-    //     .then(json => console.log(json));
     var response = await fetch(`https://www.dictionaryapi.com/api/v3/references/sd4/json/${head}?key=${key}`)
         .then(response => response.json())
         .then(json => { return json });
